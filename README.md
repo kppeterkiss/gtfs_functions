@@ -1,7 +1,7 @@
 
 # How to use this:
 
-This repo is originated from: https://github.com/Bondify/gtfs_functions, but needed some modifications in order to handle 
+This repo is originated from: https://github.com/Bondify/gtfs_functions, but needed some modifications in order to handle the mav data.
  [Original readme](README_orig.md) 
 ## Create environment 
 ```conda create --name gtfs_venv``` 
