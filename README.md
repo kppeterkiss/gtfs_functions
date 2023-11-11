@@ -21,18 +21,22 @@ the functions are installed in a development mode, so feel free to cange them/ad
 
 
 [keplergl](https://kepler.gl/) is a quite cool visualisation tool, in theory it can be used to display things in a notebook, however i could not make it work for myself.
-In this case as in ```mav.ipynb``` you can save to html, and open with browser (not sure if )
+In this case as in ```mav.ipynb``` you can save to html, and open with browser (not sure if the export )
 
 You can try the following things for yourself:
-for keplergl :
+
 https://github.com/keplergl/kepler.gl/issues/583
+
 https://jupyter-contrib-nbextensions.readthedocs.io/en/latest/install.html
+
 https://stackoverflow.com/questions/76893872/modulenotfounderror-no-module-named-notebook-base-when-installing-nbextension
+
+
+Some of these commands might be helpful:
 
 ```conda install ipywidgets```
 
 ```conda install -c conda-forge keplergl``` 
-
 
 ``` pip install jupyter_contrib_nbextensions```
 
