@@ -339,8 +339,8 @@ def add_frequency(
 
     start_time = trips_agg.window.apply(lambda x: cutoffs[labels.index(x)])
     end_time = trips_agg.window.apply(lambda x: cutoffs[labels.index(x) + 1])
-
-    trips_agg['min_per_trip'] = ((end_time - start_time)*60 / trips_agg.ntrips)\
+    print(trips_agg.columns)
+    trips_agg['min_per_trip'] = ((end_time - start_time)*60 / trips_agg['ntrips'])\
         .astype(int)
 
     return trips_agg

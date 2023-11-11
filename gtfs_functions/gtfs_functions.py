@@ -19,6 +19,9 @@ if not sys.warnoptions:
 logging.basicConfig(level=logging.INFO)
 
 
+
+def TrialF():
+    print('hello')
 class Feed:
     def __init__(
             self,
@@ -56,6 +59,7 @@ class Feed:
         self._speeds = None
         self._avg_speeds = None
         self._dates_service_id = None
+        self._failed_shapes= None
 
     @property
     def gtfs_path(self):
@@ -186,7 +190,7 @@ class Feed:
     @property
     def shapes(self):
         if self._shapes is None:
-            self._shapes = self.get_shapes()
+            self._shapes, self._failed_shapes = self.get_shapes()
     
         return self._shapes
     
@@ -482,11 +486,13 @@ class Feed:
         dates = self.dates
 
         trips = extract_file('trips', self)
+        #########
+        trips = trips[trips['shape_id'].notna()]
+        #########
         trips['trip_id'] = trips.trip_id.astype(str)
         trips['route_id'] = trips.route_id.astype(str)
-
         if 'shape_id' in trips.columns:
-            trips['shape_id'] = trips.shape_id.astype(str)
+            trips['shape_id'] = trips.shape_id.astype(int).astype(str)
 
         # If we were asked to only fetch the busiest date
         # if self.busiest_date:
@@ -637,11 +643,31 @@ class Feed:
     def get_shapes(self):
         if self.geo:
             aux = extract_file('shapes', self)
-            shapes = aux[["shape_id", "shape_pt_lat", "shape_pt_lon"]]\
-                .groupby("shape_id")\
+            '''
+            grouped = aux[["shape_id", "shape_pt_lat", "shape_pt_lon"]] \
+                .groupby("shape_id")
+            
+            '''
+            enough_points_mask = aux.groupby("shape_id")["shape_id"].transform('size').ge(2)
+            shapes = aux[enough_points_mask][["shape_id", "shape_pt_lat", "shape_pt_lon"]].groupby("shape_id")\
                     .agg(list)\
                         .apply(lambda x: LineString(zip(x[1], x[0])), axis=1)
-            
+
+            '''
+            shapes=[]
+            failed=[]
+            for  name, group in grouped:
+                try:
+                    #t = list(group[['shape_pt_lat', 'shape_pt_lon']].itertuples(index=False, name=None))
+                    t = group[['shape_pt_lat', 'shape_pt_lon']].to_numpy()
+                    shapes.append(LineString(t))
+                except:
+                    failed.append(name)
+                    print('failed: ', name)
+            dt=np.dtype('str')
+            shapes = np.array(shapes, dtype=dt)
+            '''
+            #shapes.dtype.names=['shape_pt_lat', 'shape_pt_lon']
             shapes = gpd.GeoDataFrame(
                 data=shapes.index,
                 geometry = shapes.values,
@@ -649,7 +675,7 @@ class Feed:
             )
             shapes['shape_id'] = shapes.shape_id.astype(str)
 
-            return shapes
+            return shapes,None
         else:
             shapes = extract_file('shapes', self)
             shapes['shape_id'] = shapes.shape_id.astype(str)
@@ -703,8 +729,8 @@ class Feed:
         stop_times = self.stop_times
         shapes = self.shapes
         cutoffs = self.time_windows
-
-        stop_times_first = stop_times.loc[stop_times.stop_sequence == 1, :]
+        stop_times_first = stop_times.sort_values('stop_sequence').drop_duplicates(subset=['trip_id'])
+        #stop_times_first = stop_times_first.loc[stop_times.stop_sequence == 1, :]
 
         # Create time windows
         if 'window' not in stop_times_first.columns:
@@ -722,7 +748,7 @@ class Feed:
 
         # Do we want a geodataframe?
         if self.geo:
-            line_frequencies = pd.merge(line_frequencies, shapes, how='left')
+            line_frequencies = pd.merge(line_frequencies, shapes, how='right')
             line_frequencies = gpd.GeoDataFrame(
                 data=line_frequencies,
                 geometry=line_frequencies.geometry,
