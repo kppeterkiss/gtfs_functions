@@ -7,11 +7,12 @@ dependencies:
   - utm
     #"numpy>=1.24.2",
   - numpy
-  - pendulum
+  - pendulum<3
   - branca
   - plotly
   - jenkspy
   - folium
+  - jupyter
   - pip
   - pip:
       - unicode

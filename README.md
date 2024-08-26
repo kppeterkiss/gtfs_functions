@@ -3,19 +3,24 @@
 
 This repo is originated from: https://github.com/Bondify/gtfs_functions, but needed some modifications in order to handle 
  [Original readme](README_orig.md) 
-## Create environment 
-```conda create --name gtfs_venv``` 
-
+## Create environment
+- creating the conda environment described by ```environment.yml```:
+```conda env create --file environment.yml``` 
+- using the gtfs_functions package in development mode (that is, the changes in the packages will appear immediately, when we try to use it in ```ipynb```)
 go to source folder  -> ``` conda develop .``` 
-
+ 
+- adding the conda environment to jupyter server:
 ``` conda install ipykernel```
 
 ``` ipython kernel install --user --name=gtfs_venv```
 
-After these, you can use ```gtfs_venv``` as 
+After these, you can use ```gtfs_venv``` in jupyter 
+
+## Example usage of the ```gtfs_functions``` package :
+```mav.ipynb```
 
 ## Change codes:
-the functions are installed in a development mode, so feel free to cange them/add to them.
+the functions are installed in a development mode, so feel free to change them/add to them.
 
 ## keplergl 
 
