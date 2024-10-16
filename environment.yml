@@ -4,16 +4,22 @@ dependencies:
   - pandas
   - geopandas
   - shapely
-  - utm
+  - conda-forge::utm
     #"numpy>=1.24.2",
   - numpy
   - pendulum<3
   - branca
   - plotly
-  - jenkspy
+  - conda-forge::jenkspy
   - folium
   - jupyter
+  - conda-build
   - pip
+  - conda-forge::googlemaps
+  - conda-forge::osmnx
+  - anaconda::python-dotenv
+  - anaconda::beautifulsoup4
   - pip:
       - unicode
+      - gmplot
 
