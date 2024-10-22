@@ -19,6 +19,7 @@ dependencies:
   - conda-forge::osmnx
   - anaconda::python-dotenv
   - anaconda::beautifulsoup4
+  - plotly::plotly
   - pip:
       - unicode
       - gmplot
