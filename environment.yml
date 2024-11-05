@@ -20,6 +20,11 @@ dependencies:
   - anaconda::python-dotenv
   - anaconda::beautifulsoup4
   - plotly::plotly
+  - anaconda::openpyxl
+  - conda-forge::geojson
+  - pytorch::pytorch
+  - anaconda::scikit-learn
+
   - pip:
       - unicode
       - gmplot
