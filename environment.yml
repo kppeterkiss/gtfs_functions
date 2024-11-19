@@ -24,6 +24,12 @@ dependencies:
   - conda-forge::geojson
   - pytorch::pytorch
   - anaconda::scikit-learn
+  - anaconda::joblib
+  - anaconda::lxml
+  - anaconda::sqlalchemy
+  - conda-forge::sqlalchemy-utils
+  - anaconda::psycopg2
+
 
   - pip:
       - unicode

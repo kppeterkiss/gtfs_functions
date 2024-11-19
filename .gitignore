@@ -1,5 +1,7 @@
 data/*
 example
 notebooks
+mode/*
+.env
 *.pyc
 /dist/
