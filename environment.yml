@@ -29,6 +29,8 @@ dependencies:
   - anaconda::sqlalchemy
   - conda-forge::sqlalchemy-utils
   - anaconda::psycopg2
+  - anaconda::html5lib
+
 
 
   - pip:
