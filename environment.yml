@@ -30,6 +30,7 @@ dependencies:
   - conda-forge::sqlalchemy-utils
   - anaconda::psycopg2
   - anaconda::html5lib
+  - anaconda::flask
 
 
 
