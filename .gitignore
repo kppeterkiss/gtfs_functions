@@ -5,3 +5,4 @@ mode/*
 .env
 *.pyc
 /dist/
+/vke/
