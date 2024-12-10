@@ -1,0 +1,9 @@
+{
+    "recentTrainsURL":"/api/recent_data",
+    "recentDetailsURL":"/api/recent_data",
+    
+    "historicTrainsURL":"/api/historic_data",
+    "historicDetailsURL":"/api/historic_data",
+    
+    "logoutLimit":86400000
+}

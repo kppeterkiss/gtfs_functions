@@ -1,0 +1,320 @@
+{
+  "Timestamp": "2024-12-03 13:13:49.674637",
+  "trains": [
+    {
+      "Vonatszam": 552051,
+      "Lat": 46.69254,
+      "Lon": 17.28863,
+      "Nev": "Z72",
+      "Nap": "2024-12-02",
+      "Keses": 5,
+      "Table": [
+        {
+          "Km": 0,
+          "\u00c1llom\u00e1s": "Esztergom",
+          "ERK_TERV": null,
+          "ERK_TENY": null,
+          "IND_TERV": "20:05:00",
+          "IND_TENY": "20:05:00",
+          "TiPUS": "szem\u00e9lyvonat",
+          "PLUSZ": "",
+          "Utolso_erk_pred": null,
+          "Utolso_ind_pred": "20:05:00"
+        },
+        {
+          "Km": 4,
+          "\u00c1llom\u00e1s": "Esztergom-Kertv\u00e1ros",
+          "ERK_TERV": "20:09:00",
+          "ERK_TENY": "20:09:00",
+          "IND_TERV": "20:10:00",
+          "IND_TENY": "20:10:00",
+          "TiPUS": "szem\u00e9lyvonat",
+          "PLUSZ": "",
+          "Utolso_erk_pred": "20:09:00",
+          "Utolso_ind_pred": "20:10:00"
+        },
+        {
+          "Km": 7,
+          "\u00c1llom\u00e1s": "Dorog",
+          "ERK_TERV": "20:13:00",
+          "ERK_TENY": "20:14:00",
+          "IND_TERV": "20:14:00",
+          "IND_TENY": "20:14:00",
+          "TiPUS": "szem\u00e9lyvonat",
+          "PLUSZ": "",
+          "Utolso_erk_pred": "20:14:00",
+          "Utolso_ind_pred": "20:14:00"
+        },
+        {
+          "Km": 12,
+          "\u00c1llom\u00e1s": "Le\u00e1nyv\u00e1r",
+          "ERK_TERV": "20:18:00",
+          "ERK_TENY": "20:19:00",
+          "IND_TERV": "20:19:00",
+          "IND_TENY": "20:20:00",
+          "TiPUS": "szem\u00e9lyvonat",
+          "PLUSZ": "",
+          "Utolso_erk_pred": "20:19:00",
+          "Utolso_ind_pred": "20:20:00"
+        },
+        {
+          "Km": 17,
+          "\u00c1llom\u00e1s": "Pilisj\u00e1szfalu",
+          "ERK_TERV": "20:24:00",
+          "ERK_TENY": "20:25:00",
+          "IND_TERV": "20:24:00",
+          "IND_TENY": "20:25:00",
+          "TiPUS": "szem\u00e9lyvonat",
+          "PLUSZ": "",
+          "Utolso_erk_pred": "20:25:00",
+          "Utolso_ind_pred": "20:25:00"
+        },
+        {
+          "Km": 19,
+          "\u00c1llom\u00e1s": "Magdolnav\u00f6lgy",
+          "ERK_TERV": "20:26:00",
+          "ERK_TENY": "20:27:00",
+          "IND_TERV": "20:26:00",
+          "IND_TENY": "20:27:00",
+          "TiPUS": "szem\u00e9lyvonat",
+          "PLUSZ": "",
+          "Utolso_erk_pred": "20:27:00",
+          "Utolso_ind_pred": "20:27:00"
+        },
+        {
+          "Km": 21,
+          "\u00c1llom\u00e1s": "Piliscsaba",
+          "ERK_TERV": "20:29:00",
+          "ERK_TENY": "20:30:00",
+          "IND_TERV": "20:30:00",
+          "IND_TENY": "20:31:00",
+          "TiPUS": "szem\u00e9lyvonat",
+          "PLUSZ": "",
+          "Utolso_erk_pred": "20:30:00",
+          "Utolso_ind_pred": "20:31:00"
+        },
+        {
+          "Km": 22,
+          "\u00c1llom\u00e1s": "Klotildliget",
+          "ERK_TERV": "20:32:00",
+          "ERK_TENY": "20:33:00",
+          "IND_TERV": "20:32:00",
+          "IND_TENY": "20:33:00",
+          "TiPUS": "szem\u00e9lyvonat",
+          "PLUSZ": "",
+          "Utolso_erk_pred": "20:33:00",
+          "Utolso_ind_pred": "20:33:00"
+        },
+        {
+          "Km": 28,
+          "\u00c1llom\u00e1s": "Szabads\u00e1gliget",
+          "ERK_TERV": "20:39:00",
+          "ERK_TENY": "20:40:00",
+          "IND_TERV": "20:39:00",
+          "IND_TENY": "20:40:00",
+          "TiPUS": "szem\u00e9lyvonat",
+          "PLUSZ": "",
+          "Utolso_erk_pred": "20:40:00",
+          "Utolso_ind_pred": "20:40:00"
+        },
+        {
+          "Km": 30,
+          "\u00c1llom\u00e1s": "Pilisv\u00f6r\u00f6sv\u00e1r",
+          "ERK_TERV": "20:41:00",
+          "ERK_TENY": "20:42:00",
+          "IND_TERV": "20:42:00",
+          "IND_TENY": "20:43:00",
+          "TiPUS": "szem\u00e9lyvonat",
+          "PLUSZ": "",
+          "Utolso_erk_pred": "20:42:00",
+          "Utolso_ind_pred": "20:43:00"
+        },
+        {
+          "Km": 34,
+          "\u00c1llom\u00e1s": "Solym\u00e1r",
+          "ERK_TERV": "20:46:00",
+          "ERK_TENY": "20:47:00",
+          "IND_TERV": "20:47:00",
+          "IND_TENY": "20:48:00",
+          "TiPUS": "szem\u00e9lyvonat",
+          "PLUSZ": "",
+          "Utolso_erk_pred": "20:47:00",
+          "Utolso_ind_pred": "20:48:00"
+        },
+        {
+          "Km": 43,
+          "\u00c1llom\u00e1s": "Aquincum",
+          "ERK_TERV": "20:54:00",
+          "ERK_TENY": "20:55:00",
+          "IND_TERV": "20:54:00",
+          "IND_TENY": "20:55:00",
+          "TiPUS": "szem\u00e9lyvonat",
+          "PLUSZ": "",
+          "Utolso_erk_pred": "20:55:00",
+          "Utolso_ind_pred": "20:55:00"
+        },
+        {
+          "Km": 45,
+          "\u00c1llom\u00e1s": "\u00dajpest",
+          "ERK_TERV": "20:57:00",
+          "ERK_TENY": "20:58:00",
+          "IND_TERV": "20:58:00",
+          "IND_TENY": "20:59:00",
+          "TiPUS": "szem\u00e9lyvonat",
+          "PLUSZ": "",
+          "Utolso_erk_pred": "20:58:00",
+          "Utolso_ind_pred": "20:59:00"
+        },
+        {
+          "Km": 53,
+          "\u00c1llom\u00e1s": "Budapest-Nyugati",
+          "ERK_TERV": "21:09:00",
+          "ERK_TENY": "21:10:00",
+          "IND_TERV": null,
+          "IND_TENY": null,
+          "TiPUS": "szem\u00e9lyvonat",
+          "PLUSZ": "",
+          "Utolso_erk_pred": "21:10:00",
+          "Utolso_ind_pred": null
+        }
+      ],
+      "geom": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            18.914315,
+            47.608803
+          ],
+          [
+            18.896665,
+            47.618662
+          ],
+          [
+            18.89695,
+            47.619395
+          ],
+          [
+            18.897939,
+            47.620477
+          ],
+          [
+            18.898259,
+            47.620963
+          ],
+          [
+            18.898408,
+            47.621476
+          ],
+          [
+            18.851077,
+            47.632759
+          ],
+          [
+            18.851397,
+            47.634035
+          ],
+          [
+            18.782212,
+            47.666002
+          ],
+          [
+            18.782501,
+            47.666639
+          ],
+          [
+            18.782796,
+            47.666985
+          ],
+          [
+            18.783309,
+            47.66739
+          ],
+          [
+            18.783941,
+            47.667706
+          ],
+          [
+            18.784654,
+            47.667922
+          ],
+          [
+            18.785413,
+            47.668027
+          ],
+          [
+            18.789162,
+            47.668101
+          ],
+          [
+            18.790571,
+            47.66856
+          ],
+          [
+            18.791152,
+            47.668892
+          ],
+          [
+            18.79184,
+            47.669481
+          ],
+          [
+            18.792166,
+            47.669916
+          ],
+          [
+            18.792425,
+            47.670482
+          ],
+          [
+            18.792519,
+            47.671054
+          ],
+          [
+            18.712952,
+            47.740255
+          ],
+          [
+            18.71337,
+            47.740829
+          ],
+          [
+            18.713971,
+            47.741284
+          ],
+          [
+            18.724554,
+            47.745971
+          ],
+          [
+            18.725439,
+            47.746451
+          ],
+          [
+            18.726229,
+            47.747022
+          ],
+          [
+            18.738609,
+            47.759589
+          ],
+          [
+            18.740954,
+            47.762388
+          ],
+          [
+            18.741571,
+            47.76326
+          ],
+          [
+            18.741937,
+            47.764157
+          ],
+          [
+            18.743662,
+            47.773536
+          ]
+        ]
+      }
+    }
+  ]
+}
