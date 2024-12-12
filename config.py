@@ -8,6 +8,7 @@ passanger_info_folder = data_root + '2_147_utastajekoztatas_'
 years_to_process = [2022, 2023]
 event_file_name = "vonat_esemenyek_"
 delay_causes_dir = data_root + "kesesi_ok/"
+cache_location=data_root+'cache/'
 
 mav_api_url = "https://vonatinfo.mav-start.hu/map.aspx/getData"
 

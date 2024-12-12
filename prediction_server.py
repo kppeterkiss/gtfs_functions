@@ -3,38 +3,35 @@ from flask import request
 from flask import send_from_directory
 import os
 import warnings
+
 warnings.simplefilter(action='ignore', category=FutureWarning)
-#warnings.simplefilter(action='ignore', category=SettingWithCopyWarning)
+# warnings.simplefilter(action='ignore', category=SettingWithCopyWarning)
 
 from utils import init_data, get_recent_trains, convert_real_time_to_ml_data, iterative_prediction, JSONEncoder, \
-    load_geom_dbs, load_sk_by_desc, get_train_data, get_geometry, get_recent_train_details, get_historic_trains,get_historic_train_details
-from config import data_root
+    load_geom_dbs, load_sk_by_desc, get_train_data, get_geometry, get_recent_train_details, get_historic_trains, \
+    get_historic_train_details,build_history_cache
+from config import data_root, cache_location
 import pandas as pd
 import json
+
 pd.options.mode.chained_assignment = None
-
-
-
 
 app = Flask(__name__, static_folder=os.path.abspath('/vke/'))
 
+train_schedules = None
+met_stat_locations = None
+coords = None
 
-train_schedules=None
-met_stat_locations=None
-coords=None
-
-recent_trains=None
-mapping_with_shapes=None
+recent_trains = None
+mapping_with_shapes = None
 model = None
-base_RT =None
+base_RT = None
 
-
-raw_data=None
-historic_train_details=None
+raw_data = None
+historic_train_details = None
 
 
 # Define a route for the root URI
-
 
 
 @app.route('/<path:path>')
@@ -70,7 +67,7 @@ def get_data():
         recent_trains, resp = get_recent_trains(train_schedules)
         return resp
     else:
-        return get_recent_train_details(d, train_schedules, model, recent_trains,mapping_with_shapes)
+        return get_recent_train_details(d, train_schedules, model, recent_trains, mapping_with_shapes)
 
     return jsonify({"date": str(d)})
 
@@ -78,25 +75,24 @@ def get_data():
 # Define another route for a different URI
 @app.route('/api/historic_data', methods=['GET'])
 def get_message():
-    global gtfs_name_mapping,gtfs_geom_mapping,raw_data,base_RT,historic_train_details
+    global gtfs_name_mapping, gtfs_geom_mapping, raw_data, base_RT, historic_train_details
 
     d = request.args.get('date')
-    tn=request.args.get('vonatszam')
+    tn = request.args.get('vonatszam')
     print(tn)
     print(d)
     if tn is None:
-        resp, det=get_historic_trains(d, raw_data, mapping_with_shapes, coords, base_RT)
+        raw_data, mapping_with_shapes, coords, base_RT
+        resp, det = get_historic_trains(d, raw_data, mapping_with_shapes, coords, base_RT)
 
-        historic_train_details=resp
+        historic_train_details = resp
         return resp
     else:
-        return get_historic_train_details(d,tn,historic_train_details)
+        return get_historic_train_details(d, tn, historic_train_details)
 
 
+appHasRunBefore: bool = False
 
-
-
-appHasRunBefore:bool = False
 
 @app.before_request
 def firstRun():
@@ -125,5 +121,24 @@ def firstRun():
         # Set the bool to True so this method isn't called again
         appHasRunBefore = True
 
+
 if __name__ == '__main__':
+    import argparse
+
+    parser = argparse.ArgumentParser(description='Create a ArcHydro schema')
+    parser.add_argument('--caching', action='store_true', help='Start cache building instead of server')
+    #parser.add_argument('--caching', help="Start cache building instead of server", type=int, default=0)
+    args = parser.parse_args()
+    if args.caching:
+        dates = ['2023-10-15', '2023-10-16', '2023-10-17']
+        # TODO sok szükségtelen meló itt
+        _, _, coords = init_data()
+
+        mapping_with_shapes = load_geom_dbs()
+        base_RT = load_sk_by_desc('RT', 'base', 'Base')['model']
+        raw_data = pd.read_pickle(data_root + 'data.pkl')
+        build_history_cache(dates, raw_data, mapping_with_shapes, coords, base_RT, cache_location)
+        exit(0)
+
+
     app.run(debug=True)

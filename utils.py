@@ -886,3 +886,38 @@ def get_historic_train_details(date_str, train_no, details):
     return json.dumps({"states": details[int(train_no)]}, cls=JSONEncoder)
 
 
+from config import cache_location
+
+import os
+
+def create_directory_if_not_exists(directory_path):
+    if not os.path.exists(directory_path):
+        os.makedirs(directory_path)
+        print(f"Directory '{directory_path}' created.")
+    else:
+        print(f"Directory '{directory_path}' already exists.")
+
+def build_history_cache(date_str_array, raw_data, mapping_with_shapes, coords, model,cache_location):
+    for d in date_str_array:
+
+        # trains aznapi vonathelyzetek, details=napi vonatonkénti állapotok
+        trains,details=get_historic_trains(d, raw_data, mapping_with_shapes, coords, model)
+        cache_dir=cache_location+d+'/'
+        create_directory_if_not_exists(cache_dir)
+        # Write the JSON string to a file
+        with open(cache_dir+'trains.json', 'w') as file:
+            file.write(trains)
+        # Pickling the dictionary
+        with open(cache_dir+'details.pkl', 'wb') as f:
+            pickle.dump(details, f)
+
+def read_historic_trains_from_cache(date_str,cache_location):
+    with open(cache_location+date_str+"/trains.json", "r") as f:
+     return f.read()
+
+def read_historic_train_detailes_from_cache(date_str,train_no,cache_location):
+    with open(cache_location+date_str+"/trains.json", "r") as openfile:
+        train_detail_dict=pickle.load(openfile)
+        return train_detail_dict()
+
+
