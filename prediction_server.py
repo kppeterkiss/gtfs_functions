@@ -9,7 +9,8 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 from utils import init_data, get_recent_trains, convert_real_time_to_ml_data, iterative_prediction, JSONEncoder, \
     load_geom_dbs, load_sk_by_desc, get_train_data, get_geometry, get_recent_train_details, get_historic_trains, \
-    get_historic_train_details,build_history_cache
+    get_historic_train_details, build_history_cache, read_historic_trains_from_cache, \
+    read_historic_train_detailes_from_cache
 from config import data_root, cache_location
 import pandas as pd
 import json
@@ -78,18 +79,23 @@ def get_message():
     global gtfs_name_mapping, gtfs_geom_mapping, raw_data, base_RT, historic_train_details
 
     d = request.args.get('date')
-    tn = request.args.get('vonatszam')
+    tn = request.args.get('Vonatszam')
     print(tn)
     print(d)
     if tn is None:
+        '''
         raw_data, mapping_with_shapes, coords, base_RT
         resp, det = get_historic_trains(d, raw_data, mapping_with_shapes, coords, base_RT)
-
         historic_train_details = resp
+        '''
+        resp = read_historic_trains_from_cache(d, cache_location)
+
         return resp
     else:
+        '''
         return get_historic_train_details(d, tn, historic_train_details)
-
+        '''
+        return get_historic_train_details(d, tn, read_historic_train_detailes_from_cache(d,tn,cache_location))
 
 appHasRunBefore: bool = False
 

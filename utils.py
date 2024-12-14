@@ -1,3 +1,5 @@
+import shutil
+
 import dotenv
 
 from config import data_root,weather_folder,gtfs_folder,gtfs_stops_file,passanger_info_folder,years_to_process,mav_api_url
@@ -13,6 +15,31 @@ import os
 dotenv.load_dotenv()
 owm_key=os.environ['openweathermap_api_key']
 
+
+def reload_dotenv():
+    env_vars = dotenv.dotenv_values(".env")
+    for key, value in env_vars.items():
+        os.environ[key] = value
+
+def create_folder_if_not_exists(folder_name):
+    if not os.path.exists(folder_name):
+        os.makedirs(folder_name)
+        print(f"Directory '{folder_name}' created successfully!")
+    else:
+        print(f"Directory '{folder_name}' already exists.")
+
+
+def download_gtfs_zip():
+    dotenv.load_dotenv()
+    today_str = datetime.datetime.today().strftime('%Y-%m-%d')
+    from config import gtfs_download_link, gtfs_dowload_location
+    username = os.getenv('gtfs_user')
+    password = os.getenv('gtfs_pw')
+    with open(gtfs_dowload_location + today_str + '_gtfs.zip', 'wb') as file:
+        response = requests.get(gtfs_download_link.format(username=username, password=password), stream=True)
+        print('Response Code:', response.status_code)
+        file.write(response.content)
+    shutil.copyfile(gtfs_dowload_location + today_str + '_gtfs.zip', gtfs_dowload_location + "latest/gtfs.zip")
 
 '''data_root="data/"
 weather_folder=data_root+"odp/"
@@ -224,7 +251,7 @@ def get_trains_on_lines(main_stations):
     return trains_per_lines
 
 def load_location_data():
-    return pd.read_pickle(data_root+"stat_coord_dict.pkl")
+    return pd.read_pickle(generated_files_path+"stat_coord_dict.pkl")
 
 def load_weather_meta():
     """
@@ -247,6 +274,7 @@ def get_daily_weather_forcast(lat=47.969911,lon=21.767344):
     return process_forecast(response.json())
 
 def process_forecast(wf_dict):
+    print(wf_dict)
     """
        Takes a dict received from OWM, and calculates daily weather forcast
        Returns:
@@ -454,7 +482,7 @@ def iterative_prediction(iterative_pred_df,model):
 import pickle
 from config import gtfs_dowload_location
 def load_geom_dbs():
-    file = open(data_root+'gtfs_shapes.pkl', 'rb')
+    file = open(+'gtfs_shapes.pkl', 'rb')
     mapping = pickle.load(file)
     shapes=pd.read_csv(gtfs_dowload_location + "latest/gtfs/shapes.txt")
     mapping_with_shapes=mapping.merge(shapes, how='left')
@@ -523,7 +551,7 @@ class JSONEncoder(json.JSONEncoder):
             return obj.tolist()
         return json.JSONEncoder.default(self, obj)
 
-from config import main_stations,collected_trains,collected_trains,data_root,weather_folder
+from config import main_stations,collected_trains,collected_trains,generated_files_path,weather_folder
 import pandas as pd
 
 
@@ -566,7 +594,7 @@ def add_weather_data(train_schedules,coords,met_stat_locations):
 
 def init_data():
 
-    coords=pd.read_pickle(data_root+"stat_coord_dict.pkl")
+    coords=pd.read_pickle(generated_files_path+"stat_coord_dict.pkl")
     weather_meta_file_name=weather_folder+"weather_meta_avg.csv"
     met_stat_locations=pd.read_csv(weather_meta_file_name,sep=',',encoding='iso-8859-2')
 
@@ -828,6 +856,7 @@ def get_histrory(query_date, gtfs_name_mapping, gtfs_geom_mapping, raw_data, mod
 
             pdf, ts, valid, train_obj, err = predict_history(model, d, train_no, name,gtfs_name_mapping)
             errors.append(err)
+            #ts és valid alapján indexálva ezek egymást követő tényidők elvileg
             state_store[(train_no, ts, valid)] = train_obj
             del d
 
@@ -867,8 +896,11 @@ def get_historic_trains(date_str, raw_data, mapping_with_shapes, coords, model):
         for k, v in state_store.items():
             # if idx>3: continue
             # print(first_element,k[1],second_element)
-            if (first_element <= k[1]) and (second_element > k[1]):
-                print('here')
+            #ez itt nem jó csak akkor kerül az állapotunk be ha épp a ts ebbe esik
+            #úgy kellene, hogy ha a vonatállapot ts és valid ideje közé esik az inervallum akkor hozzádni
+            #elvileg dulpikálódhat a vonat a határokon,
+            # hisz ha az általa generált ponton vagyunk akkor két különböző időintervallumra is érvényes lesz (?) nem mert dupla feltétel?
+            if (first_element >= k[1]) and (second_element <= k[2]):
                 state_obj['trains'].append(copy_small_data(v))
             idx += 1
         all_trains.append(state_obj)
@@ -908,16 +940,18 @@ def build_history_cache(date_str_array, raw_data, mapping_with_shapes, coords, m
         with open(cache_dir+'trains.json', 'w') as file:
             file.write(trains)
         # Pickling the dictionary
+        #joblib.dump(details, cache_dir + 'details.pkl')
+
         with open(cache_dir+'details.pkl', 'wb') as f:
             pickle.dump(details, f)
 
 def read_historic_trains_from_cache(date_str,cache_location):
     with open(cache_location+date_str+"/trains.json", "r") as f:
-     return f.read()
+        return f.read()
 
 def read_historic_train_detailes_from_cache(date_str,train_no,cache_location):
-    with open(cache_location+date_str+"/trains.json", "r") as openfile:
+    with open(cache_location+date_str+"/details.pkl", "rb") as openfile:
         train_detail_dict=pickle.load(openfile)
-        return train_detail_dict()
+        return train_detail_dict
 
 
