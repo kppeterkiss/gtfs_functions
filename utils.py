@@ -366,7 +366,7 @@ def save_NN(model, X_scaler, y_scaler, history, data_desc, model_desc='base'):
 
     plt.legend(loc="upper left")
 
-    plt.savefig(loc + 'history.png')
+    plt.savefig(loc + 'history_.png')
 
 
 def load_NN(path):
@@ -482,7 +482,7 @@ def iterative_prediction(iterative_pred_df,model):
 import pickle
 from config import gtfs_dowload_location
 def load_geom_dbs():
-    file = open(+'gtfs_shapes.pkl', 'rb')
+    file = open(generated_files_path+'gtfs_shapes.pkl', 'rb')
     mapping = pickle.load(file)
     shapes=pd.read_csv(gtfs_dowload_location + "latest/gtfs/shapes.txt")
     mapping_with_shapes=mapping.merge(shapes, how='left')
@@ -591,6 +591,12 @@ def add_weather_data(train_schedules,coords,met_stat_locations):
     query_data[['tx','t','tn','r']]=query_data.apply(lambda x: pd.Series(get_daily_weather_forcast(x['Lat'],x['Lon'])),axis=1)
     train_schedules=train_schedules.merge(query_data)
     return train_schedules
+
+def init_data_offline():
+    coords=pd.read_pickle(generated_files_path+"stat_coord_dict.pkl")
+    weather_meta_file_name=weather_folder+"weather_meta_avg.csv"
+    met_stat_locations=pd.read_csv(weather_meta_file_name,sep=',',encoding='iso-8859-2')
+    return None,met_stat_locations,coords
 
 def init_data():
 
@@ -726,10 +732,11 @@ def predict_history(model, ml_data, train_no, train_name,mapping_with_shapes):
     arrival_time_def_pred = termonation_schedule + current_delay
     future_data = td[pd.isnull(td['ELOZO_SZAKASZ_KESES (m)'])]
 
-    to_drop = ['VONATSZAM', 'IDO', "TENY_IDO", "ESEMENY_SORSZAM", "RELATIV_KESES", "ID", "OSSZ_KESES (m)",
+    to_drop = ['VONATSZAM', 'IDO', "TENY_IDO",  "RELATIV_KESES", "ID", "OSSZ_KESES (m)",
                'TENY_IDOTARTAM (m)', "Kezdés", "Befejezés", 'KOZLEKEDESI_NAP', 'POLGARI_NEV', 'SZH_NEV', 'stop_name',
                'KESES (m)', 'SZH_KOD_ind', 'stop_lat_ind', 'stop_lon_ind', 'SZH_NEV_ind', 'SZH_KOD_cél', 'stop_lat_cél',
-               'stop_lon_cél', 'SZH_NEV_cél', 'cél_szh', 'ind_szh']
+               'stop_lon_cél', 'SZH_NEV_cél', 'cél_szh', 'ind_szh', 'ALLOMAS', 'IndulóÁllomás','Legközelebbi met. állomás','Loc','SZH_KOD_x','SZH_KOD_y','Time','stop_lat','stop_lon']
+
 
     not_ml_data_past = past_data[to_drop]
     not_ml_data_future = future_data[to_drop]
@@ -870,12 +877,25 @@ import copy
 def get_historic_trains(date_str, raw_data, mapping_with_shapes, coords, model):
     state_store, corr, train_nos = get_histrory(date_str, mapping_with_shapes, coords, raw_data, model)
     keys = state_store.keys()
-    sc = np.mean([c[0] for c in corr.values()])
-    p = np.mean([c[1] for c in corr.values()])
+    scs={}
+    ps={}
+    nos={}
+    for key in collected_trains.keys():
+        '''
+        if key not in scs.keys():
+            scs[key]=[]
+            ps[key]=[]
+        '''
+        nos[key]= np.sum([1 for k,c in corr.items() if k in collected_trains[key]])
+        scs[key]= np.mean([c[0] for k,c in corr.items() if k in collected_trains[key]])
+        ps[key] = np.mean([c[1] for k,c in corr.items() if k in collected_trains[key]])
     ts_s = [s for n, s, e in keys]
     ts_s.sort()
+    info=''
+    for k in scs.keys():
+        info+= f'{k} ({nos[k]}) - SC={scs[k]}, p={ps[k]} \n'
     # states - ezeken belül
-    resp = {"Info": f"SC={sc}, p={p}"}
+    resp = {"Info": info}
     all_trains = []
 
     def copy_small_data(t_o):
@@ -911,7 +931,8 @@ def get_historic_trains(date_str, raw_data, mapping_with_shapes, coords, model):
             details[k[0]] = []
         train_state_obj = {"Timestamp": k[1], 'Valid': k[2], "trains": [v]}
         details[k[0]].append(train_state_obj)
-    return json.dumps(resp, cls=JSONEncoder), details
+    measurements=(scs,ps,nos)
+    return json.dumps(resp, cls=JSONEncoder), details, measurements
 
 
 def get_historic_train_details(date_str, train_no, details):
@@ -930,10 +951,12 @@ def create_directory_if_not_exists(directory_path):
         print(f"Directory '{directory_path}' already exists.")
 
 def build_history_cache(date_str_array, raw_data, mapping_with_shapes, coords, model,cache_location):
+    to_sc_calc=[]
     for d in date_str_array:
 
         # trains aznapi vonathelyzetek, details=napi vonatonkénti állapotok
-        trains,details=get_historic_trains(d, raw_data, mapping_with_shapes, coords, model)
+        trains,details,measurements=get_historic_trains(d, raw_data, mapping_with_shapes, coords, model)
+        to_sc_calc.append(measurements)
         cache_dir=cache_location+d+'/'
         create_directory_if_not_exists(cache_dir)
         # Write the JSON string to a file
@@ -944,6 +967,7 @@ def build_history_cache(date_str_array, raw_data, mapping_with_shapes, coords, m
 
         with open(cache_dir+'details.pkl', 'wb') as f:
             pickle.dump(details, f)
+    pickle.dump(to_sc_calc, open(generated_files_path+'sc.pkl', 'wb'))
 
 def read_historic_trains_from_cache(date_str,cache_location):
     with open(cache_location+date_str+"/trains.json", "r") as f:

@@ -10,8 +10,8 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 from utils import init_data, get_recent_trains, convert_real_time_to_ml_data, iterative_prediction, JSONEncoder, \
     load_geom_dbs, load_sk_by_desc, get_train_data, get_geometry, get_recent_train_details, get_historic_trains, \
     get_historic_train_details, build_history_cache, read_historic_trains_from_cache, \
-    read_historic_train_detailes_from_cache
-from config import data_root, cache_location
+    read_historic_train_detailes_from_cache, init_data_offline
+from config import data_root, cache_location, generated_files_path
 import pandas as pd
 import json
 
@@ -102,7 +102,7 @@ appHasRunBefore: bool = False
 
 @app.before_request
 def firstRun():
-    print('first call')
+    #print('first call')
     global appHasRunBefore
     if not appHasRunBefore:
         # Run any of your code here
@@ -121,7 +121,7 @@ def firstRun():
         mapping_with_shapes = load_geom_dbs()
         model = load_sk_by_desc('RT', 'base', 'Small')['model']
         base_RT = load_sk_by_desc('RT', 'base', 'Base')['model']
-        raw_data = pd.read_pickle(data_root + 'data.pkl')
+        raw_data = pd.read_pickle(generated_files_path + 'data.pkl')
         print('init done')
 
         # Set the bool to True so this method isn't called again
@@ -136,13 +136,13 @@ if __name__ == '__main__':
     #parser.add_argument('--caching', help="Start cache building instead of server", type=int, default=0)
     args = parser.parse_args()
     if args.caching:
-        dates = ['2023-10-15', '2023-10-16', '2023-10-17']
+        dates = ['2023-12-16', '2023-12-17', '2023-12-18']
         # TODO sok szükségtelen meló itt
-        _, _, coords = init_data()
+        _, _, coords = init_data_offline()
 
         mapping_with_shapes = load_geom_dbs()
         base_RT = load_sk_by_desc('RT', 'base', 'Base')['model']
-        raw_data = pd.read_pickle(data_root + 'data.pkl')
+        raw_data = pd.read_pickle(generated_files_path + 'data.pkl')
         build_history_cache(dates, raw_data, mapping_with_shapes, coords, base_RT, cache_location)
         exit(0)
 

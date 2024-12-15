@@ -4,6 +4,9 @@
     
     "historicTrainsURL":"/api/historic_data",
     "historicDetailsURL":"/api/historic_data",
-    
+
+    "username":"admin",
+    "password":"vonat1234",
+
     "logoutLimit":86400000
 }
