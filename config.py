@@ -26,8 +26,8 @@ main_stations = {2: ["Budapest-Nyugati",
                      "Piliscsaba",
                      "Dorog",
                      "Esztergom"],
-                 147: ["Kiskunfélegyháza", "Gátér", "Csongrád", "	Szentes", "Fábiánsebestyén", "Gádoros",
-                       "	Orosháza"]
+                 147: ["Kiskunfélegyháza", "Gátér", "Csongrád", "Szentes", "Fábiánsebestyén", "Gádoros",
+                       "Orosháza"]
                  }
 
 collected_trains = {

@@ -102,7 +102,7 @@ appHasRunBefore: bool = False
 
 @app.before_request
 def firstRun():
-    #print('first call')
+    print('first call')
     global appHasRunBefore
     if not appHasRunBefore:
         # Run any of your code here
@@ -136,7 +136,7 @@ if __name__ == '__main__':
     #parser.add_argument('--caching', help="Start cache building instead of server", type=int, default=0)
     args = parser.parse_args()
     if args.caching:
-        dates = ['2023-12-16', '2023-12-17', '2023-12-18']
+        dates = ['2023-01-31']
         # TODO sok szükségtelen meló itt
         _, _, coords = init_data_offline()
 

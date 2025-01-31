@@ -482,19 +482,44 @@ def iterative_prediction(iterative_pred_df,model):
 import pickle
 from config import gtfs_dowload_location
 def load_geom_dbs():
-    file = open(generated_files_path+'gtfs_shapes.pkl', 'rb')
+
+    file = open(generated_files_path + 'gtfs_shapes_full.pkl', 'rb')
     mapping = pickle.load(file)
-    shapes=pd.read_csv(gtfs_dowload_location + "latest/gtfs/shapes.txt")
-    mapping_with_shapes=mapping.merge(shapes, how='left')
-    mapping_with_shapes=mapping_with_shapes[['VONATSZAM','shape_pt_lat','shape_pt_lon','shape_pt_sequence']]
+    # több shape_id egy rout id-hoz. meg kellene találni a leghosszabbat a az egész vonalhoz..
+    shapes = pd.read_csv(gtfs_dowload_location + "latest/gtfs/shapes.txt")
+    mapping_with_shapes = mapping.merge(shapes, how='left')
+    agg_method='union_of_shapes'
+    agg_method='biggest_shape'
+    if agg_method=='biggest_shape':
+        a = mapping_with_shapes.groupby(['VONATSZAM', 'shape_id'])['shape_pt_sequence'].nunique().reset_index()
+        max_indices = a.groupby('VONATSZAM')['shape_pt_sequence'].idxmax()
+        max_values = a.loc[max_indices]
+        #single_shape_ids_with_train_ids = max_values.merge(mapping, how='left')
+        train_desc_with_geom_ids = max_values.merge(shapes, how='left')
+        train_desc_with_geom_ids['shape_id'] = train_desc_with_geom_ids['shape_id'].astype(int)
+        train_desc_with_geom_ids = train_desc_with_geom_ids[['VONATSZAM', 'shape_id']]
+        train_with_shapes = train_desc_with_geom_ids.merge(shapes, how='left')
+    else:
+        train_with_shapes = mapping_with_shapes.merge(shapes, how='left')
+
+
+
+
+    mapping_with_shapes = train_with_shapes[
+        ['VONATSZAM', 'shape_pt_lat', 'shape_pt_lon', 'shape_pt_sequence']].drop_duplicates().sort_values(by='shape_pt_sequence')
+
     return mapping_with_shapes
 
 import geojson
 def get_geometry(train_no, mapping_df):
     geom_act = mapping_df[mapping_df['VONATSZAM'] == train_no]
+    print(f' {train_no} geometry:')
+    print(geom_act)
+
     if geom_act.empty():
         print(f'No geometry for {train_no}')
         return None
+    print(geom_act)
     points = list(zip(geom_act['shape_pt_lon'], geom_act['shape_pt_lat']))
     # Define coordinates for the LineString
     coordinates = points
@@ -567,9 +592,90 @@ def get_geometry(train_no, mapping_df):
     # Convert the LineString object to a JSON string
     # line_json = geojson.dumps(line)
     return line
+
+
+def process_api_trains(rets):
+    routes = pd.read_csv(gtfs_dowload_location + "latest/gtfs/routes.txt")
+    routes['numbers'] = routes["route_long_name"].map(
+        lambda long_name: ' '.join([i for i in str(long_name).strip().split(" ") if i.isnumeric()])
+    )
+    # számok és ic nevek
+    routes['name'] = ""
+    routes.loc[~routes['route_long_name'].isnull(), 'name'] = routes['route_long_name']
+    routes.loc[~routes['route_short_name'].isnull(), 'name'] = routes['route_short_name']
+    routes = routes[['route_id','numbers','name']].drop_duplicates()
+    trips = pd.read_csv(gtfs_dowload_location + "latest/gtfs/trips.txt")
+    #trips = trips[trips['shape_id'].notna()]
+    trips.loc[trips['shape_id'].isna(), 'shape_id'] = trips['trip_id'].apply(lambda x: float(x.split('_')[0]))
+
+    trips = trips[['route_id', 'shape_id']].drop_duplicates()
+    shapes = routes.merge(trips)
+    from config import not_existing
+
+    naming_data_from_api = {}
+    for k, v in rets.items():
+        print(k)
+        #feleslegesnek tűnik
+        #if k in not_existing:
+            #print('not existing ', k)
+            #continue
+        #ide se nagyon jövünk be
+        if v is None:
+            print(f'missing train: {k} ')
+            not_existing += [k]
+            continue
+        #API-ból visszafejtettnevek és vonatszámok
+        naming_data_from_api[k] = {}
+        name = v['NEV'].loc[0]
+        type = v['TiPUS'].loc[0]
+        if type.isupper():
+            print(type)
+            t = name
+            name = type
+            type = t
+        if name.islower():
+            t = name
+            name = type
+            type = t
+        naming_data_from_api[k]['NEV'] = name
+        naming_data_from_api[k]['TIPUS'] = type
+        naming_data_from_api[k]['VONATSZAM'] = k
+    mapping = pd.DataFrame(naming_data_from_api.values())
+    mapping.loc[mapping['NEV'] == "", 'NEV'] = mapping['VONATSZAM'].astype(str)
+    #full join:  mindent mindennel, hogy kb név összehasonlítást tudjunk csinálni
+    '''
+    merged_df = mapping.assign(key=1).merge(shapes.assign(key=1), on='key')
+    merged_df['contains'] = merged_df.apply(lambda row: row['NEV'] in row['name'], axis=1)
+    # csak azokat tartjuk meg ahol volt név match
+    merged_df = merged_df[merged_df['contains']]
+    merged_df = merged_df[merged_df['NEV'] != '']
+    merged_df.tail()
+    merged_df_all_route_ids=merged_df.drop_duplicates()
+    merged_df_all_route_ids.to_pickle(generated_files_path + 'gtfs_shapes_full.pkl')
+    del merged_df, merged_df_all_route_ids, mapping, trips, routes
+    '''
+    shapes_with_nums = shapes.loc[shapes['numbers'] != ""]
+    shapes_with_names = shapes.loc[shapes['numbers'] == ""]
+    shapes_with_nums['VONATSZAM'] = shapes_with_nums['numbers'].astype(int)
+    m1 = mapping.merge(shapes_with_nums)
+    m1 = m1[['NEV', 'VONATSZAM', 'route_id', 'shape_id']].drop_duplicates()
+    shapes_with_names['NEV'] = shapes_with_names['name']
+
+    shapes_with_names = shapes_with_names[['route_id', 'NEV', 'shape_id']].drop_duplicates()
+
+    m2 = mapping.merge(shapes_with_names)
+    m2 = m2[['NEV', 'VONATSZAM', 'route_id', 'shape_id']].drop_duplicates()
+
+    m = pd.concat([m1, m2])
+    m.to_pickle(generated_files_path + 'gtfs_shapes_full.pkl')
+
+    del m1, m2, shapes_with_names, trips, routes, shapes_with_nums
+
+
 def init_schedule(main_stations_dict,collected_trains_dict):
     # mi az amit követünk, illetve mi az ami tényleg közlekedik a vonalon
     trains_to_watch = get_trains_on_lines(main_stations_dict)
+    # az aznapi menetrend szerint közlekedő vonatok és a historikus adatokban szereplők metszete
     for k,v in collected_trains_dict.items():
         trains_to_watch[k] = list(set(map(int, trains_to_watch[k])).intersection(collected_trains_dict[k]))
     # figyelt vonatok végleges listája
@@ -579,6 +685,8 @@ def init_schedule(main_stations_dict,collected_trains_dict):
     all_watched_train_data={}
     for train_no in watched_trains_list:
         all_watched_train_data[train_no]=get_train_data(train_no)
+    process_api_trains(all_watched_train_data)
+    #pickle.dump(all_watched_train_data, open(generated_files_path + 'full_train_pull.pkl', 'wb'))
     train_schedules=pd.concat( [v.groupby('VONAT').agg({'IND_TERV': ['first'], 'ERK_TERV': ['last'], 'KOZLEKEDESI_NAP': ['last'],'Állomás':['first','last'],'NEV':'first'}).reset_index() for v in all_watched_train_data.values()])
     train_schedules.columns=train_schedules.columns.map('_'.join)
     train_schedules["VONATSZAM_L"]=train_schedules['VONAT_'].astype(str).apply(lambda x:'55'+x)
@@ -598,8 +706,26 @@ def init_data_offline():
     met_stat_locations=pd.read_csv(weather_meta_file_name,sep=',',encoding='iso-8859-2')
     return None,met_stat_locations,coords
 
-def init_data():
+def update_gtfs():
 
+    download_gtfs_zip()
+    import zipfile
+    from config import gtfs_dowload_location
+
+    extracted_folder = gtfs_dowload_location + "latest/gtfs"
+
+    print(f'Extracting {gtfs_dowload_location + "latest/gtfs"} ')
+    # create folder with the same name of zip, and extract content in it
+    with zipfile.ZipFile(gtfs_dowload_location + "latest/gtfs.zip", 'r') as zip_ref:
+        if not os.path.exists(extracted_folder):
+            os.mkdir(extracted_folder)
+        zip_ref.extractall(extracted_folder)
+        # iterate over all the downloaded files (per zip, with hourly update we expect a single file)
+        for f in os.listdir(extracted_folder):
+            print(f)
+
+def init_data():
+    update_gtfs()
     coords=pd.read_pickle(generated_files_path+"stat_coord_dict.pkl")
     weather_meta_file_name=weather_folder+"weather_meta_avg.csv"
     met_stat_locations=pd.read_csv(weather_meta_file_name,sep=',',encoding='iso-8859-2')
@@ -669,20 +795,25 @@ def get_recent_train_details(no, train_schedules, model, recent_trains,mapping_w
     ml_data.loc[0, 'ELOZO_SZAKASZ_KESES (m)'] = 0.0
     td = ml_data.copy()
     past_data = td[~pd.isnull(td['KESES (m)'])]
-    past_data['pred'] = model.predict(
-        past_data[['MENETREND_IDO (m)', 'ELOZO_SZAKASZ_KESES (m)', 'tx', 't', 'tn', 'r', 'TERV_IDOTARTAM (m)']])
+    print('past_data')
+    print(past_data)
+    if not past_data.empty:
+        past_data['pred'] = model.predict(
+            past_data[['MENETREND_IDO (m)', 'ELOZO_SZAKASZ_KESES (m)', 'tx', 't', 'tn', 'r', 'TERV_IDOTARTAM (m)']])
+        past_data['Last prediction'] = past_data['IDO'] + pd.to_timedelta(past_data['pred'], unit='m')
+        past_data = past_data.drop(columns=['pred'])
+
     future_data = td[pd.isnull(td['KESES (m)'])]
     #print('Future - ', future_data.shape)
+    print('future_data')
+    print(future_data)
     iterative_pred_df = future_data[
         ['MENETREND_IDO (m)', 'ELOZO_SZAKASZ_KESES (m)', 'tx', 't', 'tn', 'r', 'TERV_IDOTARTAM (m)']]
     iterative_prediction(iterative_pred_df, model)
     future_data[['ELOZO_SZAKASZ_KESES (m)', 'pred']] = iterative_pred_df[['ELOZO_SZAKASZ_KESES (m)', 'pred']]
-
-    past_data['Last prediction'] = past_data['IDO'] + pd.to_timedelta(past_data['pred'], unit='m')
     future_data['cum_pred'] = future_data['pred'].cumsum()
     future_data['Last prediction'] = future_data['IDO'] + pd.to_timedelta(future_data['cum_pred'], unit='m')
     future_data = future_data.drop(columns=['pred', 'cum_pred'])
-    past_data = past_data.drop(columns=['pred'])
     predicted_df = pd.concat([past_data, future_data])
     print(predicted_df.columns)
     ret_df = predicted_df.groupby('Állomás').agg(
@@ -857,7 +988,7 @@ def get_histrory(query_date, gtfs_name_mapping, gtfs_geom_mapping, raw_data, mod
 
         for i in single_test_train.index:
             d = single_test_train.copy()
-            d.loc[i:, 'ELOZO_SZAKASZ_KESES (m)'] = np.NaN
+            d.loc[i:, 'ELOZO_SZAKASZ_KESES (m)'] = np.nan
 
             # print(name)
 
@@ -970,8 +1101,11 @@ def build_history_cache(date_str_array, raw_data, mapping_with_shapes, coords, m
     pickle.dump(to_sc_calc, open(generated_files_path+'sc.pkl', 'wb'))
 
 def read_historic_trains_from_cache(date_str,cache_location):
-    with open(cache_location+date_str+"/trains.json", "r") as f:
-        return f.read()
+    try:
+        with open(cache_location+date_str+"/trains.json", "r") as f:
+            return f.read()
+    except:
+        return "{}"
 
 def read_historic_train_detailes_from_cache(date_str,train_no,cache_location):
     with open(cache_location+date_str+"/details.pkl", "rb") as openfile:
